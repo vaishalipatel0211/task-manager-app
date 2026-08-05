@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <h3 class="section-title">Quick access</h3>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('tasks_page') }}">Tasks</a>
+            <a class="active" href="{{ url_for('reports') }}">Reports</a>
+        </div>
+    </aside>
+
+    <section class="dashboard-content">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Reports</h2>
+                <p class="page-subtitle">Review progress and keep an eye on your workload.</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total</div>
+                <div class="stat-value">{{ stats.total }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value">{{ stats.completed }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value">{{ stats.pending }}</div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h3 class="section-title">Task overview</h3>
+            <div class="task-list">
+                {% for task in tasks %}
+                    <div class="task-item">
+                        <div>
+                            <strong>{{ task.title }}</strong>
+                            <div class="task-meta">{{ task.status }} • {{ task.priority }}</div>
+                        </div>
+                        <span class="badge {{ task.status.lower() }}">{{ task.status }}</span>
+                    </div>
+                {% else %}
+                    <div class="task-item">No report data yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

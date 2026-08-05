@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="glass-card">
+    <span class="brand-mark">Welcome back</span>
+    <h2 class="page-title">Login</h2>
+    <p class="subtitle">Access your task board and stay organized.</p>
+    <form method="post">
+        <label><span>Email</span><input type="email" name="email" required></label>
+        <label><span>Password</span><input type="password" name="password" required></label>
+        <div>
+            <button type="submit">Login</button>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary">Create account</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

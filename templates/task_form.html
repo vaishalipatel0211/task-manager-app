@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <h3 class="section-title">Quick access</h3>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('tasks_page') }}">Tasks</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+        </div>
+    </aside>
+
+    <section class="dashboard-content">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">{{ 'Edit Task' if task else 'New Task' }}</h2>
+                <p class="page-subtitle">Set the task details clearly so it stays easy to follow.</p>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <form method="post" class="form-grid">
+                <div class="full">
+                    <label><span>Title</span><input type="text" name="title" value="{{ task.title if task else '' }}" required></label>
+                </div>
+                <div class="full">
+                    <label><span>Description</span><textarea name="description">{{ task.description if task else '' }}</textarea></label>
+                </div>
+                <label><span>Priority</span><select name="priority">
+                    <option value="Low" {% if task and task.priority == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if not task or task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if task and task.priority == 'High' %}selected{% endif %}>High</option>
+                </select></label>
+                <label><span>Category</span><select name="category">
+                    <option value="Work" {% if task and task.category == 'Work' %}selected{% endif %}>Work</option>
+                    <option value="Study" {% if task and task.category == 'Study' %}selected{% endif %}>Study</option>
+                    <option value="Personal" {% if not task or task.category == 'Personal' %}selected{% endif %}>Personal</option>
+                </select></label>
+                <label><span>Status</span><select name="status">
+                    <option value="Pending" {% if not task or task.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Completed" {% if task and task.status == 'Completed' %}selected{% endif %}>Completed</option>
+                </select></label>
+                <label><span>Due Date</span><input type="date" name="due_date" value="{{ task.due_date if task else '' }}"></label>
+                <div>
+                    <button type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}

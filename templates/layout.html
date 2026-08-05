@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><h1>Task Manager</h1></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-wrap">
+            <a class="brand" href="{{ url_for('dashboard') if session.get('user_id') else url_for('login') }}">Task Manager</a>
+            <div class="nav-links">
+                {% if session.get('user_id') %}
+                    <a class="{% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    <a class="{% if request.endpoint == 'tasks_page' %}active{% endif %}" href="{{ url_for('tasks_page') }}">Tasks</a>
+                    <a class="{% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">Reports</a>
+                    {% if session.get('user_role') == 'admin' %}
+                        <a class="{% if request.endpoint == 'admin' %}active{% endif %}" href="{{ url_for('admin') }}">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                    <button id="themeToggleBtn" onclick="toggleTheme()" class="btn btn-outline-light btn-sm ms-2" style="border-radius: 20px; padding: 2px 10px; cursor: pointer;">
+                       <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
+                    </button>
+                {% else %}
+                    <a class="{% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Login</a>
+                    <a class="{% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-frame {% if session.get('user_id') %}dashboard-page{% else %}auth-page{% endif %}">
+        <div class="page-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+                updateThemeUI(true);
+            }
+        });
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle("dark-mode");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            const icon = document.getElementById("themeIcon");
+            const text = document.getElementById("themeText");
+            if (icon && text) {
+                icon.innerText = isDark ? "☀️" : "🌙";
+                text.innerText = isDark ? "Light" : "Dark";
+            }
+        }
+    </script>
+</body>
+</html>
+

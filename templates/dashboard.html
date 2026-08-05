@@ -1,0 +1,64 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <h3 class="section-title">Quick access</h3>
+        <div class="nav-links">
+            <a class="active" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('tasks_page') }}">Tasks</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+            {% if session.get('user_role') == 'admin' %}
+                <a href="{{ url_for('admin') }}">Admin</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <section class="dashboard-content">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Dashboard</h2>
+                <p class="page-subtitle">Keep your tasks clear and your day on track.</p>
+            </div>
+            <a class="btn" href="{{ url_for('new_task') }}">+ Add Task</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total tasks</div>
+                <div class="stat-value">{{ stats.total_tasks }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value">{{ stats.completed_tasks }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value">{{ stats.pending_tasks }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Overdue</div>
+                <div class="stat-value">{{ stats.overdue_tasks }}</div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h3 class="section-title">Recent tasks</h3>
+            <div class="task-list">
+                {% for task in tasks %}
+                    <div class="task-item">
+                        <div>
+                            <strong>{{ task.title }}</strong>
+                            <div class="task-meta">{{ task.priority }} • {{ task.category }} • Due: {{ task.due_date or 'No date' }}</div>
+                        </div>
+                        <form method="post" action="{{ url_for('toggle_task', task_id=task.id) }}">
+                            <button class="btn btn-sm btn-outline">{{ 'Undo' if task.status == 'Completed' else 'Complete' }}</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="task-item">No tasks yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

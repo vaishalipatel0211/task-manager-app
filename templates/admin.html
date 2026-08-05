@@ -1,0 +1,93 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <h3 class="section-title">Admin tools</h3>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('tasks_page') }}">Tasks</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+            <a class="active" href="{{ url_for('admin') }}">Admin</a>
+        </div>
+    </aside>
+
+    <section class="dashboard-content">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Admin Panel</h2>
+                <p class="page-subtitle">Manage users and review all tasks from one place.</p>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <h3 class="section-title">Add user</h3>
+            <form method="post" action="{{ url_for('add_user') }}" class="auth-form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add user</button>
+            </form>
+        </div>
+
+        <div class="panel-card table-card">
+            <h3 class="section-title">Users</h3>
+            <table>
+                <thead>
+                    <tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline">
+                                <button class="btn btn-sm btn-secondary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel-card">
+            <h3 class="section-title">All tasks</h3>
+            <div class="task-list">
+                {% for task in tasks %}
+                    <div class="task-item">
+                        <div>
+                            <strong>{{ task.title }}</strong>
+                            <div class="task-meta">{{ task.status }} • {{ task.priority }}</div>
+                        </div>
+                        <span class="badge {{ task.status.lower() }}">{{ task.status }}</span>
+                    </div>
+                {% else %}
+                    <div class="task-item">No tasks.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

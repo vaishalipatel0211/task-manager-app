@@ -1,0 +1,198 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+        <h3 class="section-title">Quick access</h3>
+
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="active" href="{{ url_for('tasks_page') }}">Tasks</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+        </div>
+    </aside>
+
+    <section class="dashboard-content">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Tasks</h2>
+                <p class="page-subtitle">Search, filter, and manage every task from one place.</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <!-- NEW: CSV Export Button -->
+                <a href="/export/csv" class="btn" style="background: #276749; color: white; text-decoration: none;">📥 Export CSV</a>
+                <a class="btn" href="{{ url_for('new_task') }}">+ Create Task</a>
+            </div>
+        </div>
+
+        <div class="panel_card" style="margin-bottom: 24px; padding: 20px;">
+            <h3 class="section-title"style="margin-bottom: 15px; color: #fff;"> Task Analytics</h3>
+            <div style="height: 220px; position: relative;">
+                <canvas id="taskAnalyticsChart" width=""400" height="200"></canvas>
+            </div>
+
+        </div>
+
+        <div class="panel-card">
+            <form method="get" class="form-grid">
+                <div class="full">
+                    <label><span>Search</span><input type="text" name="q" value="{{ q }}" placeholder="Search tasks"></label>
+                </div>
+                <label><span>Status</span><select name="status">
+                    <option value="">All Status</option>
+                    <option value="Pending" {% if status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Completed" {% if status == 'Completed' %}selected{% endif %}>Completed</option>
+                </select></label>
+                <label><span>Priority</span><select name="priority">
+                    <option value="">All Priority</option>
+                    <option value="Low" {% if priority == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if priority == 'High' %}selected{% endif %}>High</option>
+                </select></label>
+                <label><span>Category</span><select name="category">
+                    <option value="">All Category</option>
+                    <option value="Work" {% if category == 'Work' %}selected{% endif %}>Work</option>
+                    <option value="Study" {% if category == 'Study' %}selected{% endif %}>Study</option>
+                    <option value="Personal" {% if category == 'Personal' %}selected{% endif %}>Personal</option>
+                </select></label>
+                <div>
+                    <button class="btn">Filter</button>
+                </div>
+            </form>
+        </div>
+        <!--NEW: Drag & Drop kanban board-->
+        <div class="panel-card" style="margin-top: 24px; padding: 20px;">
+            <h3 class="section-title" style="margin-bottom: 15px; color: #fff;">Kanban Board</h3>
+            <div style="display: flex; gap: 20px;">
+                <!-- Pending Column -->
+                <div class="kanban-column" id="Pending" ondragover="allowDrop(event)" ondrop="drop(event)" style="flex: 1; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; min-height: 250px;">
+                    <h4 style="color: #ecc94b; border-bottom: 1px solid #ecc94b; padding-bottom: 6px; margin-top: 0;">⏳ Pending</h4>
+                    {% for task in tasks if task.status == 'Pending' %}
+                    <div class="kanban-card" id="task-{{ task.id }}" draggable="true" ondragstart="drag(event)" style="background: rgba(0,0,0,0.4); margin: 10px 0; padding: 10px; border-radius: 6px; cursor: move;">
+                        <strong style="color: #fff; display: block; margin-bottom: 4px;">{{ task.title }}</strong>
+                        <span style="font-size: 11px; color: #a0aec0;">Priority: {{ task.priority }} | Due: {{ task.due_date or '-' }}</span>
+                        
+                        <!-- Sub-tasks Section inside Card -->
+                        <div style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px;">
+                            <form action="/tasks/{{ task.id }}/subtask/add" method="POST" style="display: flex; gap: 4px;">
+                                <input type="text" name="subtask_title" placeholder="+ Add subtask" required style="font-size: 10px; padding: 3px; border-radius: 4px; border: none; width: 70%;">
+                                <button type="submit" class="btn" style="padding: 2px 6px; font-size: 10px;">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Completed Column -->
+                <div class="kanban-column" id="Completed" ondragover="allowDrop(event)" ondrop="drop(event)" style="flex: 1; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; min-height: 250px;">
+                    <h4 style="color: #48bb78; border-bottom: 1px solid #48bb78; padding-bottom: 6px; margin-top: 0;">✓ Completed</h4>
+                    {% for task in tasks if task.status == 'Completed' %}
+                    <div class="kanban-card" id="task-{{ task.id }}" draggable="true" ondragstart="drag(event)" style="background: rgba(0,0,0,0.4); margin: 10px 0; padding: 10px; border-radius: 6px; cursor: move;">
+                        <span style="text-decoration: line-through; color: #a0aec0;">{{ task.title }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!--Table view-->
+
+        <div class="panel-card table-card" style="margin-top: 24px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Priority</th>
+                        <th>Category</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>x
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.priority }}</td>
+                        <td>{{ task.category }}</td>
+                        <td>{{ task.due_date or '—' }}</td>
+                        <td><span class="badge {{ task.status.lower() }}">{{ task.status }}</span></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline" href="{{ url_for('edit_task', task_id=task.id) }}">Edit</a>
+                            <form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" style="display:inline">
+                                <button class="btn btn-sm btn-secondary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6">No tasks found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () 
+{
+    const ctx = document.getElementById('taskAnalyticsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Pending', 'Completed', 'High Priority', 'Medium Priority', 'Low Priority'],
+            datasets: [{
+                label: 'Total Tasks',
+                data: [
+                    Number('{{ stats.pending if stats else 0 }}'),
+                    Number('{{ stats.completed if stats else 0 }}'),
+                    Number('{{ stats.high if stats else 0 }}'),
+                    Number('{{ stats.medium if stats else 0 }}'),
+                    Number('{{ stats.low if stats else 0 }}')
+                ],
+                backgroundColor: [
+                    'rgba(255, 193, 7, 0.85)',
+                    'rgba(40, 167, 69, 0.85)',
+                    'rgba(220, 53, 69, 0.85)',
+                    'rgba(23, 162, 184, 0.85)',
+                    'rgba(255, 105, 180, 0.85)'
+                ],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#ffffff', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                x: { ticks: { color: '#ffffff' }, grid: { display: false } }
+            }
+        }
+    });
+});
+function allowDrop(ev) { ev.preventDefault(); }
+function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+function drop(ev)
+{
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const cardElement = document.getElementById(data);
+    const targetColumn = ev.target.closest('.kanban-column');
+
+    if (targetColumn) 
+    {
+        targetColumn.appendChild(cardElement);
+        const taskId = data.replace('task-', '');
+        const newStatus = targetColumn.id;
+
+        fetch(`/api/tasks/${taskId}/update-status`, 
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+    }
+}
+</script>
+{% endblock %}
